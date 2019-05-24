@@ -1,0 +1,30 @@
+html
+    head
+        link(rel="stylesheet" href="/stylesheets/style.css")
+        script(src="/socket.io/socket.io.js")
+        script(src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js")
+        script.
+            loginId = "#{data.id}";
+            loginName = "#{data.name}";
+        script(src='/javascripts/socket.js')
+
+body
+    div(class="groups-container")
+        div
+            h2(class="rooms") ROOMS
+            div(id="rooms")
+
+    div(class="chat-container")
+        div(id="chatroom")
+            div(id="feedback")
+
+        form(id="textarea" action="" method="POST")
+            div
+                textarea(name="text_editor" id="text")
+
+            div
+                button( class="signupbtn" type="submit") Send
+
+    div(tyle="display: none;" class="user-container")
+        div(id="users")
+
