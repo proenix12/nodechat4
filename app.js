@@ -12,7 +12,7 @@ const express = require('express')
     , expressValidator = require('express-validator')
     , Users = require('./models/users');
 
-server.listen(80);
+server.listen(8080);
 
 mongoose.connect(config.database, {useCreateIndex: true, useNewUrlParser: true, useFindAndModify: false});
 let db = mongoose.connection;
@@ -93,23 +93,25 @@ let rooms = ['room1', 'room2', 'room3'];
 let date = new Date().toLocaleTimeString();
 
 
-function addUser(targetId, senderId, name, email) {
+function addUser(recipient, senderId, name, email, status) {
 
-    let test = [
-        {_id: senderId, name: name, email: email, friend: false}
+    let senderDetails = [
+        {_id: senderId, name: name, email: email, friend: status}
     ];
 
     //update Database
     Users.findByIdAndUpdate({
-        _id: targetId
+        _id: recipient
     }, {
         $push: {
-            friends: test
+            friends: senderDetails
 
         }
     }, {
         new: true,
-        useFindAndModify: false
+        useFindAndModify: false,
+        upsert: true
+
     }, function (err, res) {
         if (err) console.log(err);
         if (res) console.log(res);
@@ -157,17 +159,66 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('invite-friend', function (target, sender) {
         Users.find({_id: sender}, function (err, user) {
-            if (user)
-                addUser(target, sender, user[0].userName, user[0].email);
+            if (user) {
+                addUser(target, sender, user[0].userName, user[0].email, false);
                 io.to(people[target]).emit("show-user-fiend-notification", user[0].userName + 'wat to be a friends', '/sounds/light.mp3');
+            }
         });
 
     });
-    
-    socket.on('notification', function () {
+
+    socket.on('accept-fiend-request', function (recipient, sender) {
+        console.log('recipient: ', recipient, 'sender: ', sender);
+        const query = {
+            _id: recipient,
+            friends: {$elemMatch: {_id: sender}}
+        }
+
+        Users.find(query, function (err, user) {
+            if (err) console.log(err);
+            for (let i = 0; i < user.length; i++)
+                if (user[i].friends[i]._id === sender && user[i].friends[i].friend === false) {
+                    Users.findByIdAndUpdate(
+                        {
+                            _id: user[i]._id,
+                            friends: {$elemMatch: {_id: sender}}
+                        },
+                        {
+                            $set: {
+                                "friends.$[friend].friend": true
+                            },
+                        },
+                        {
+                            arrayFilters: [
+                                {
+                                    'friend._id': sender
+                                },
+                            ],
+                            new: true,
+                            useFindAndModify: false,
+                            upsert: true,
+                            multi: true,
+                        },
+                        function (err, res) {
+                            if (err) console.log(err);
+                            if (res) console.log('res', res);
+                        });
+                    //addUser('', '', '', '', true);
+                }
+        })
+    });
+
+    socket.on('notification', function (sender) {
         Users.find({_id: socket.userId}, function (err, user) {
-            if (user[0].friends.length > 0)
-                io.to(people[socket.userId]).emit("list-friend-requests", user[0].friends);
+            for (let i = 0; i < user.length; i++) {
+                for (let y = 0; y < user[i].friends.length; y++) {
+                    if (user[i].friends[y].friend === false) {
+                        io.to(people[socket.userId]).emit("list-friend-requests", user[i].friends);
+                    }else{
+                        io.to(people[socket.userId]).emit("list-friend-requests");
+                    }
+                }
+            }
         });
 
     });

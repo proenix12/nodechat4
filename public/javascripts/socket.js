@@ -1,12 +1,11 @@
-let socket = io.connect('http://188.124.95.40:80');
+let socket = io.connect('http://localhost:8080');
 
 socket.on('connect', function () {
     socket.userId = loginId;
     socket.username = loginName;
     socket.emit('adduser', {id: loginId, name: loginName, email: loginEmail});
+    socket.emit('notification', loginId);
 });
-
-socket.emit('notification');
 
 function switchRoom(room) {
     socket.emit('switchRoom', room);
@@ -90,24 +89,30 @@ jQuery(document).ready(function ($) {
     socket.on('show-user-fiend-notification', function (data, sound) {
         const audio = new Audio(sound);
         audio.play();
-        socket.emit('notification');
+        socket.emit('notification', socket.userId);
     });
 
     socket.on('list-friend-requests', function (data) {
-        let count;
-        let html = '';
-        html += '<div class="dropdown-content">';
-        for (let i = 0; i < data.length; i++) {
-            console.log(data[i]);
-            if (data[i].friend == false) {
-                count = i;
-                html += '<div class="user-fr-request-list" data-id="'+data[i]._id+'"><div><img src="/images/img_avatar.png"></div><div class="request-name-lis">' + data[i].name + '</div><div><button>Accept</button><button>Decline</button></div></div>';
+        if (data) {
+            let count;
+            let html = '';
+            let showNotification = false;
+            html += '<div class="dropdown-content">';
+            for (let i = 0; i < data.length; i++) {
+                if (data[i].friend == false) {
+                    showNotification = true;
+                    count = i + 1;
+                    html += '<div class="user-fr-request-list"><div><img src="/images/img_avatar.png"></div><div class="request-name-lis">' + data[i].name + '</div><div><button id="accept" data-id-sender="' + data[i]._id + '" data-id-recipient="' + socket.userId + '">Accept</button><button id="decline" data-id="' + socket.userId + '">Decline</button></div></div>';
+                }
             }
-        }
 
-        let totalCount = count + 1;
-        html += '</div>';
-        $('.notifications').html('<div class="notification-message">U have ' + totalCount + ' notification</div>' + html);
+            html += '</div>';
+            if (showNotification) {
+                $('.notifications').html('<div class="notification-message">U have ' + count + ' notification</div>' + html);
+            }
+        }else{
+            $('.notifications').html();
+        }
     });
 
     $('#textarea').submit(function (e) {
@@ -149,6 +154,13 @@ jQuery(document).ready(function ($) {
         e.preventDefault();
         $('.modal').css('display', 'none');
     });
+
+    $(document)
+        .on('click', '#accept', function (e) {
+            e.preventDefault();
+            socket.emit('accept-fiend-request', $(this).attr('data-id-recipient'), $(this).attr('data-id-sender'));
+            socket.emit('notification', loginId);
+        });
 
 
     $(document).on('click', '.userHandler', function () {
