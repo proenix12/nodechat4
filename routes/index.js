@@ -16,14 +16,16 @@ router.get('/', function(req, res, next) {
 
 router.get('/app', function (req, res) {
 
-    if (req.user) { // if user is login
-        let test = {
+    if (req.user) {
+
+        
+        let userDetails = {
             'id': req.user._id,
             'name': req.user.userName,
             'email': req.user.email
         };
 
-        res.render('app', { data:test } );
+        res.render('app', { data:userDetails } );
     } else {
         //  if user is not login
         // send message and redirect user

@@ -6,14 +6,14 @@ const bcrypt = require('bcryptjs');
 
 /* GET users listing. */
 
-router.get('/login', function(req, res) {
+router.get('/login', function (req, res) {
     res.render('login');
 });
 
-router.post('/login', function(req, res, next){
+router.post('/login', function (req, res, next) {
     passport.authenticate('local', {
-        successRedirect:'/app',
-        failureRedirect:'/users/login',
+        successRedirect: '/app',
+        failureRedirect: '/users/login',
         failureFlash: true
     })(req, res, next);
 });
@@ -35,28 +35,27 @@ router.post('/register', function (req, res) {
     let errors = req.validationErrors();
     let errorMsg = '';
 
-    if(errors) {
-        res.render('register', { errors:errors });
+    if (errors) {
+        res.render('register', {errors: errors});
 
-    }else{
-        let query = {userName:username};
-        Users.findOne(query, function(err, user){
-            if(err) throw err;
-            if(user){
+    } else {
+        let query = {userName: username};
+        Users.findOne(query, function (err, user) {
+            if (err) throw err;
+            if (user) {
                 errorMsg = 'user is taken';
-            }else{
+            } else {
                 let users = new Users({
-                    userName : username,
-                    password : password,
-                    email : email,
+                    userName: username,
+                    password: password,
+                    email: email,
                 });
                 const saltRounds = 10;
                 const myPlaintextPassword = password;
 
-                console.log('new user');
-                bcrypt.genSalt(saltRounds, function(err, salt) {
-                    bcrypt.hash(myPlaintextPassword, salt, function(err, hash) {
-                        if(err){
+                bcrypt.genSalt(saltRounds, function (err, salt) {
+                    bcrypt.hash(myPlaintextPassword, salt, function (err, hash) {
+                        if (err) {
                             console.log(err);
                         }
                         users.password = hash;
@@ -71,7 +70,7 @@ router.post('/register', function (req, res) {
     }
 });
 
-router.get('/logout', function(req, res){
+router.get('/logout', function (req, res) {
     req.logout();
     req.flash('success', 'You are logged out');
     res.redirect('/users/login');

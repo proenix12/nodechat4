@@ -15,6 +15,9 @@ let userSchema = mongoose.Schema({
         lowercase: true,
         unique: true,
         required: true
+    },
+    friends: {
+        type: Array,
     }
 });
 

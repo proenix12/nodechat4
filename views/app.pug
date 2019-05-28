@@ -1,30 +1,73 @@
 html
     head
+        link(rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous")
         link(rel="stylesheet" href="/stylesheets/style.css")
         script(src="/socket.io/socket.io.js")
-        script(src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js")
+        script(src="/javascripts/jquery.js")
         script.
             loginId = "#{data.id}";
             loginName = "#{data.name}";
+            loginEmail = "#{data.email}";
         script(src='/javascripts/socket.js')
 
 body
+    div(id="id01" class="modal")
+        div(class="modal-content")
+            span(class="close" title="Close Modal") &times;
+            p dumymodalmodalmodalmodalmodal
+
+    div(id="id02" class="modal rooms-modal")
+        div(class="modal-content")
+            span(class="close" title="Close Modal") &times;
+            p dumymodalmodalmodalmodalmodal1
+
+    div(id="id03" class="call-modal")
+        div(class="card")
+            img(src="images/img_avatar2.png" alt="Avatar" style="width:100%")
+            div(class="card-container")
+                h4
+                    b Jane Doe
+                    p Interior Designer
+            div(class="call-buttons-container")
+                button(class="accept") Accept
+                button(class="decline") Decline
+
+    div(id="id04" class="modal rooms-modal")
+        span(class="close" title="Close Modal") &times;
+        div(class="modal-content")
+
     div(class="groups-container")
         div
             h2(class="rooms") ROOMS
             div(id="rooms")
+
+        div
+            h2(class="rooms") My Rooms
+            div(id="myRooms")
+                a(href="#")
+                    i(class="far fa-plus-square")
+
+        div
+            h2(class="rooms") Settings
+            div(class="settings-container")
+                a(href="#")
+                    i(class="fas fa-cog")
+            hr
+
+            div(class="search-users")
+                a(href="#")
+                    i(class="fas fa-user-plus")
 
     div(class="chat-container")
         div(id="chatroom")
             div(id="feedback")
 
         form(id="textarea" action="" method="POST")
-            div
-                textarea(name="text_editor" id="text")
-
-            div
-                button( class="signupbtn" type="submit") Send
+            textarea(name="text_editor" id="text")
+            button( class="signupbtn" type="submit")
+                i(class="far fa-paper-plane")
 
     div(tyle="display: none;" class="user-container")
-        div(id="users")
-
+        div(class="friendList")
+            h2(class="rooms friendListHeader") Friends
+            div(class="notifications")
