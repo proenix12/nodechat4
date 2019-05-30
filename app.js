@@ -10,9 +10,10 @@ const express = require('express')
     , session = require('express-session')
     , passport = require('passport')
     , expressValidator = require('express-validator')
-    , Users = require('./models/users');
+    , Users = require('./models/users')
+    , NodeRSA = require('node-rsa');
 
-server.listen(8080);
+server.listen(80);
 
 mongoose.connect(config.database, {useCreateIndex: true, useNewUrlParser: true, useFindAndModify: false});
 let db = mongoose.connection;
@@ -119,6 +120,23 @@ function addUser(recipient, senderId, name, email, status) {
 }
 
 
+const key = new NodeRSA({b: 512});
+
+const encrypted = key.encrypt('5ced56cc5b93af1508f5bb79', 'base64');
+console.log('encrypted: ', encrypted);
+
+const decrypted = key.decrypt(encrypted, 'utf8');
+console.log('decrypted: ', decrypted);
+
+
+function myDecrypted(dec) {
+    let str = key.decrypt(dec, 'utf8');
+    let target = str.replace('"', '');
+
+    return target.replace('"', '');
+}
+
+
 io.sockets.on('connection', function (socket) {
 
     socket.on('event1', function (data) {
@@ -150,7 +168,7 @@ io.sockets.on('connection', function (socket) {
         Users.find({}, function (err, users) {
             let allUsers = [];
             for (let i = 0; i < users.length; i++)
-                allUsers[i] = {id: users[i]._id, name: users[i].userName, email: users[i].email};
+                allUsers[i] = {id: key.encrypt(users[i]._id, 'base64'), name: users[i].userName, email: users[i].email};
 
             socket.emit('new-list', allUsers);
             allUsers.slice(0, 1);
@@ -160,15 +178,16 @@ io.sockets.on('connection', function (socket) {
     socket.on('invite-friend', function (target, sender) {
         Users.find({_id: sender}, function (err, user) {
             if (user) {
-                addUser(target, sender, user[0].userName, user[0].email, false);
-                io.to(people[target]).emit("show-user-fiend-notification", user[0].userName + 'wat to be a friends', '/sounds/light.mp3');
+                addUser(myDecrypted(target), sender, user[0].userName, user[0].email, false);
+                io.to(people[myDecrypted(target)]).emit("show-user-fiend-notification", user[0].userName + 'wat to be a friends', '/sounds/light.mp3');
             }
         });
 
     });
 
     socket.on('accept-fiend-request', function (recipient, sender) {
-        console.log('recipient: ', recipient, 'sender: ', sender);
+        recipient = myDecrypted(recipient);
+        sender = myDecrypted(sender);
         const query = {
             _id: recipient,
             friends: {$elemMatch: {_id: sender}}
@@ -176,51 +195,77 @@ io.sockets.on('connection', function (socket) {
 
         Users.find(query, function (err, user) {
             if (err) console.log(err);
-            for (let i = 0; i < user.length; i++)
-                if (user[i].friends[i]._id === sender && user[i].friends[i].friend === false) {
-                    Users.findByIdAndUpdate(
-                        {
-                            _id: user[i]._id,
-                            friends: {$elemMatch: {_id: sender}}
-                        },
-                        {
-                            $set: {
-                                "friends.$[friend].friend": true
+            for (let i = 0; i < user.length; i++) {
+                for (let y = 0; y < user[i].friends.length; y++) {
+                    if (user[i].friends[y]._id === sender && user[i].friends[y].friend === false) {
+                        Users.findByIdAndUpdate(
+                            {
+                                _id: user[i]._id,
+                                friends: {$elemMatch: {_id: sender, friend: false}}
                             },
-                        },
-                        {
-                            arrayFilters: [
-                                {
-                                    'friend._id': sender
+                            {
+                                $set: {
+                                    "friends.$[friend].friend": true
                                 },
-                            ],
-                            new: true,
-                            useFindAndModify: false,
-                            upsert: true,
-                            multi: true,
-                        },
-                        function (err, res) {
-                            if (err) console.log(err);
-                            if (res) console.log('res', res);
-                        });
-                    //addUser('', '', '', '', true);
+                            },
+                            {
+                                arrayFilters: [
+                                    {
+                                        'friend._id': sender
+                                    },
+                                ],
+                                new: true,
+                                useFindAndModify: false,
+                                upsert: true,
+                                multi: true,
+                            },
+                            function (err, res) {
+                                if (err) console.log(err);
+                                if (res)
+                                    io.to(people[socket.userId]).emit("list-friend-requests", user[0].friends, key.encrypt(socket.userId, 'base64'));
+                                addUser(sender, recipient, user[0].userName, user[0].email, true);
+                            });
+                    }
                 }
+            }
         })
     });
 
     socket.on('notification', function (sender) {
         Users.find({_id: socket.userId}, function (err, user) {
+            let getUnFriends = [];
             for (let i = 0; i < user.length; i++) {
                 for (let y = 0; y < user[i].friends.length; y++) {
                     if (user[i].friends[y].friend === false) {
-                        io.to(people[socket.userId]).emit("list-friend-requests", user[i].friends);
-                    }else{
-                        io.to(people[socket.userId]).emit("list-friend-requests");
+                        user[i].friends[y]._id = key.encrypt(user[i].friends[y]._id, 'base64');
+                        getUnFriends.push(user[i].friends);
                     }
                 }
             }
+            if (user)
+                io.to(people[socket.userId]).emit("list-friend-requests", getUnFriends, key.encrypt(socket.userId, 'base64'));
         });
 
+    });
+
+    socket.on('getFriendList', function () {
+        let listAllFriends = [];
+        Users.findOne({_id: socket.userId, friends: {$elemMatch: {friend: true}}}, function (err, user) {
+            if (!err)
+                if (typeof user !== 'undefined' && user !== null) {
+                    for (let i = 0; i < user.friends.length; i++) {
+                        user.friends[i]._id = key.encrypt(user.friends[i]._id, 'base64');
+                        listAllFriends.push(user.friends[i]);
+                    }
+
+                    io.to(people[socket.userId]).emit('list-client-friend-list', listAllFriends)
+                }
+        })
+    });
+
+
+    socket.on('start-private-chat-event', function (getUserId) {
+        io.to(people[myDecrypted(getUserId)]).emit('openChatWindow');
     });
 
 

@@ -55,7 +55,7 @@ table {
 }
 
 body {
-    background-color: #26262b;
+    background-color: #282828;
     font-family: 'Open Sans', sans-serif;
 }
 
@@ -292,9 +292,9 @@ body {
     position: absolute;
     top: 16px;
     right: 0;
-    height: 60px;
+    height: 71%;
     width: 100px;
-    background-color: #B10DC9;
+    background-color: #85144B;
     border: none;
     color: #fff;
 }
@@ -311,6 +311,7 @@ body {
     border: 1px solid #38373a;
     color: #858586;
     padding: 15px;
+    height: 10%;
 }
 
 #chatroom {
@@ -370,11 +371,15 @@ body {
 }
 
 .clearfix {
-    clear: bottom;
+    clear: both;
     content: "";
 }
 
-.dot {
+.column {
+    text-align: end;
+}
+
+.bar-dot {
     height: 10px;
     width: 10px;
     -webkit-border-radius: 50%;
@@ -382,6 +387,11 @@ body {
     border-radius: 50%;
     display: inline-block;
     background-color: chartreuse;
+    margin: 0 6px;
+    text-align: end;
+}
+.bar-dot:hover {
+    cursor: pointer;
 }
 
 .avatar {
@@ -488,7 +498,6 @@ body {
     top: 0;
     width: 100%; /* Full width */
     overflow: auto; /* Enable scroll if needed */
-    background-color: #474e5d;
     padding-top: 20px;
 }
 
@@ -510,7 +519,11 @@ body {
     margin: 1% auto 15% auto; /* 5% from the top, 15% from the bottom and centered */
     width: 80%; /* Could be more or less, depending on screen size */
     min-height: 700px;
+    max-height: 700px;
     color: #fff;
+    height: 100%;
+    overflow-y: auto;
+    border: 0.01em solid #85144b;
 }
 
 .close {
@@ -524,6 +537,21 @@ body {
 
 .close:hover {
     cursor: pointer;
+}
+
+.windowBar {
+    width: 100%;
+    background-color: #85144B;
+    padding: 15px;
+}
+
+.dot {
+    margin-top: 4px;
+    height: 12px;
+    width: 12px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
 }
 
 .card {
@@ -584,6 +612,7 @@ img {
     justify-content: center;
     padding: 10px;
 }
+
 .invite-friend {
     font-size: 20px;
     color: #fa8272;
@@ -594,8 +623,10 @@ img {
     width: 50px;
     border-radius: 50%;
 }
+
 .notifications {
-    background-color: #ed6f70;
+    background-color: #85144B;
+    font-style: italic;
 }
 
 .notification-message {
@@ -611,11 +642,14 @@ img {
     position: absolute;
     background-color: #f1f1f1;
     min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
     z-index: 1;
     width: 15%;
 }
-.notifications:hover .dropdown-content {display: flex;}
+
+.notifications:hover .dropdown-content {
+    display: flex;
+}
 
 .dropdown-content a {
     color: black;
@@ -629,6 +663,15 @@ img {
     display: flex;
     align-items: center;
     padding: 10px;
+}
+
+.fr-new-styles {
+    color: #52d273;
+    border-bottom: 0.1em solid #85144B;
+}
+
+.fr-new-styles:hover {
+    cursor: pointer;
 }
 
 .user-fr-request-list div img {

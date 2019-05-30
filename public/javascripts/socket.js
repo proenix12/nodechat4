@@ -1,10 +1,11 @@
-let socket = io.connect('http://localhost:8080');
+let socket = io.connect('http://188.124.95.40:80');
 
 socket.on('connect', function () {
     socket.userId = loginId;
     socket.username = loginName;
     socket.emit('adduser', {id: loginId, name: loginName, email: loginEmail});
     socket.emit('notification', loginId);
+    socket.emit('getFriendList');
 });
 
 function switchRoom(room) {
@@ -81,7 +82,7 @@ jQuery(document).ready(function ($) {
     socket.on('new-list', function (data) {
         let html = '';
         for (let i = 0; i < data.length; i++)
-            html += '<div class="find-user-container"><div><img class="find-user-profileImage" src="/images/img_avatar.png" alt=""></div><div>' + data[i].name + '</div><div>' + data[i].email + '</div><div>' + data[i].id + '</div><div><a class="invite-friend" data-id="' + data[i].id + '" href="#"><i class="fas fa-plus-square"></i></a></div></div>';
+            html += '<div class="find-user-container"><div><img class="find-user-profileImage" src="/images/img_avatar.png" alt=""></div><div>' + data[i].name + '</div><div>' + data[i].email + '</div><div>Coming Soon</div><div><a class="invite-friend" data-id="' + data[i].id + '" href="#"><i class="fas fa-plus-square"></i></a></div></div>';
 
         $('#id04 .modal-content').html(html);
     });
@@ -92,27 +93,44 @@ jQuery(document).ready(function ($) {
         socket.emit('notification', socket.userId);
     });
 
-    socket.on('list-friend-requests', function (data) {
-        if (data) {
-            let count;
+    socket.on('list-friend-requests', function (data, id) {
+        if (data[0]) {
+            let count = 0;
             let html = '';
             let showNotification = false;
             html += '<div class="dropdown-content">';
-            for (let i = 0; i < data.length; i++) {
-                if (data[i].friend == false) {
+            for (let i = 0; i < data[0].length; i++) {
+                if (data[0][i].friend === false) {
                     showNotification = true;
-                    count = i + 1;
-                    html += '<div class="user-fr-request-list"><div><img src="/images/img_avatar.png"></div><div class="request-name-lis">' + data[i].name + '</div><div><button id="accept" data-id-sender="' + data[i]._id + '" data-id-recipient="' + socket.userId + '">Accept</button><button id="decline" data-id="' + socket.userId + '">Decline</button></div></div>';
+                    count++;
+                    html += '<div class="user-fr-request-list"><div><img src="/images/img_avatar.png"></div><div class="request-name-lis">' + data[0][i].name + '</div><div><button id="accept" data-id-sender="' + data[0][i]._id + '" data-id-recipient="' + id + '">Accept</button><button id="decline" data-id-sender="' + data[0][i]._id + '" data-id-recipient="' + id + '">Decline</button></div></div>';
                 }
             }
 
             html += '</div>';
             if (showNotification) {
                 $('.notifications').html('<div class="notification-message">U have ' + count + ' notification</div>' + html);
+            } else {
+                $('.notifications').html('');
+                socket.emit('notification', loginId);
             }
-        }else{
-            $('.notifications').html();
+        } else {
+            //socket.emit('notification', loginId);
         }
+
+    });
+
+    socket.on('list-client-friend-list', function (friends) {
+        let html = '';
+        for (let i = 0; i < friends.length; i++) {
+            html += '<div class="user-fr-request-list fr-new-styles" data-id="' + friends[i]._id + '"><div><img src="/images/img_avatar.png"></div><div>' + friends[i].name + '</div></div>';
+        }
+        $('.list-my-friends').html(html);
+
+    });
+
+    socket.on('openChatWindow', function (data) {
+       console.log('chat, chat, chat');
     });
 
     $('#textarea').submit(function (e) {
@@ -150,7 +168,7 @@ jQuery(document).ready(function ($) {
         $('#id02').css('display', 'block');
     })
 
-    $('.close').click(function (e) {
+    $('.close, .closeApplication').click(function (e) {
         e.preventDefault();
         $('.modal').css('display', 'none');
     });
@@ -160,6 +178,7 @@ jQuery(document).ready(function ($) {
             e.preventDefault();
             socket.emit('accept-fiend-request', $(this).attr('data-id-recipient'), $(this).attr('data-id-sender'));
             socket.emit('notification', loginId);
+            socket.emit('getFriendList');
         });
 
 
@@ -174,6 +193,11 @@ jQuery(document).ready(function ($) {
         socket.emit('invite-friend', $(this).attr('data-id'), socket.userId);
     });
 
+    $(document).on('click', '.user-fr-request-list', function () {
+        jQuery('#id05').css('display', 'block');
+        socket.emit('start-private-chat-event', $(this).attr('data-id'));
+    });
+
 
     socket.on('event2', function (data) {
         $('#id03').css('display', 'flex');
@@ -186,3 +210,4 @@ jQuery(document).ready(function ($) {
 
 
 });
+
