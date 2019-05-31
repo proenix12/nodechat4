@@ -12,12 +12,12 @@ table, caption, tbody, tfoot, thead, tr, th, td,
 article, aside, canvas, details, embed,
 figure, figcaption, footer, header, hgroup,
 menu, nav, output, ruby, section, summary,
-time, mark, audio, video {
+time, mark, audio, video, div {
     margin: 0;
     padding: 0;
     border: 0;
     font-size: 100%;
-    font-family: 'Open Sans', sans-serif;
+    font-family: 'Ubuntu', 'Open Sans', sans-serif;
     vertical-align: baseline;
 }
 
@@ -390,6 +390,7 @@ body {
     margin: 0 6px;
     text-align: end;
 }
+
 .bar-dot:hover {
     cursor: pointer;
 }
@@ -687,4 +688,59 @@ img {
 
 .request-name-lis {
     width: 100px;
+}
+
+.chat-modal-content {
+    display: block;
+}
+
+.tabs-container {
+    width: 20%;
+}
+
+.tabs {
+    width: 80%;
+    height: 300px;
+}
+
+.chat-modal-content .tabs-container, .tabs {
+    border: 0.01em solid #fff;
+    float: left;
+    height: 300px;
+    min-height: 658px;
+    max-height: 658px;
+}
+
+
+.container-tab {
+    display: none;
+}
+
+.current {
+    display: block !important;
+}
+
+.privateChat-container {
+    display: block;
+    position: relative;
+}
+
+div.privateChat-container div.private-messages-container, div.private-textarea-container {
+    width: 100%;
+    border: 0.01em solid #f44336;
+}
+
+div.privateChat-container div.private-messages-container {
+    height: 80%;
+}
+
+
+
+div.privateChat-container div.private-textarea-container {
+    height: 20%;
+}
+div.private-textarea-container textarea {
+    width: 100%;
+    height: 100%;
+    resize: none;
 }

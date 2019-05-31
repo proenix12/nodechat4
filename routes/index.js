@@ -4,7 +4,7 @@ let Users = require('../models/users');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-    Users.find({}, function (err, users) {
+    Users.Users.find({}, function (err, users) {
 
         res.render('index', {
             users: users,

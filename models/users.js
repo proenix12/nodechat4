@@ -1,7 +1,8 @@
-let mongoose = require('mongoose');
+let mongoose = require('mongoose')
+    , Schema = mongoose.Schema;
 
-let userSchema = mongoose.Schema({
-    userName:{
+let userSchema = Schema({
+    userName: {
         type: String,
         required: true
     },
@@ -16,9 +17,17 @@ let userSchema = mongoose.Schema({
         unique: true,
         required: true
     },
-    friends: {
-        type: Array,
-    }
+    friends: [{ type: Schema.Types.ObjectId, ref: 'Friends' }]
 });
 
-let Users = module.exports = mongoose.model('Users', userSchema);
+var friendSchema = Schema({
+    _creator : { type: Number, ref: 'Users' },
+    title    : String,
+    fans     : [{ type: Number, ref: 'Users' }]
+});
+let Users = mongoose.model('Users', userSchema);
+let userFriends = mongoose.model('Friends', friendSchema);
+module.exports = {
+    'Users': Users,
+    'Friends': userFriends
+};

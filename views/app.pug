@@ -1,6 +1,7 @@
 html
     head
         link(rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous")
+        link(href="https://fonts.googleapis.com/css?family=Ubuntu&display=swap" rel="stylesheet")
         link(rel="stylesheet" href="/stylesheets/style.css")
         script(src="/socket.io/socket.io.js")
         script(src="/javascripts/jquery.js")
@@ -46,6 +47,33 @@ body
                     span(class="bar-dot closeApplication" style="background:#5AC05A;")
                     div(class="clearfix")
             div(class="chat-modal-content")
+
+                div(class="tabs-container")
+                    ul(id = "tabs")
+                        li(class = "tab-link current tab-1" data-tab = "tab-1")
+                            a(href="#") Tab1
+                        li(class = "tab-link tab-1" data-tab = "tab-2")
+                            a(href="#") Tab2
+                        li(class = "tab-link tab-1" data-tab = "tab-3")
+                            a(href="#") Tab3
+
+
+                div(class="tabs")
+                    div(id = "tab-1" class = "container container-tab current")
+                        div(class="privateChat-container")
+                            div(class="clearfix")
+                            div(class="private-messages-container")
+                            div(class="clearfix")
+                            div(class="private-textarea-container")
+                                form(class="private-textarea-form")
+                                    textarea(class="private-textarea-field")
+                            div(class="clearfix")
+                                
+
+                    div(id = "tab-2" class = "container container-tab")
+                        p test tab-2
+                    div(id = "tab-3" class = "container container-tab")
+                        p test tab-3
 
     div(class="groups-container")
         div

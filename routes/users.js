@@ -40,24 +40,24 @@ router.post('/register', function (req, res) {
 
     } else {
         let query = {userName: username};
-        Users.findOne(query, function (err, user) {
+        Users.Users.findOne(query, function (err, user) {
             if (err) throw err;
             if (user) {
                 errorMsg = 'user is taken';
             } else {
-                let users = new Users({
-                    userName: username,
-                    password: password,
-                    email: email,
-                });
+                let users = new Users.Users(
+                    {
+                        userName: username,
+                        password: password,
+                        email: email,
+                    }
+                );
                 const saltRounds = 10;
                 const myPlaintextPassword = password;
 
                 bcrypt.genSalt(saltRounds, function (err, salt) {
                     bcrypt.hash(myPlaintextPassword, salt, function (err, hash) {
-                        if (err) {
-                            console.log(err);
-                        }
+                        if (err) {console.log(err);}
                         users.password = hash;
                         users.save();
                         errorMsg = 'This is a flash message using the express-flash module.';
@@ -66,7 +66,7 @@ router.post('/register', function (req, res) {
             }
         });
         req.flash('success', errorMsg);
-        res.redirect('/users/register');
+        res.redirect('/users/login');
     }
 });
 

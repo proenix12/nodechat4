@@ -15,6 +15,7 @@ const express = require('express')
 
 server.listen(80);
 
+
 mongoose.connect(config.database, {useCreateIndex: true, useNewUrlParser: true, useFindAndModify: false});
 let db = mongoose.connection;
 
@@ -101,7 +102,7 @@ function addUser(recipient, senderId, name, email, status) {
     ];
 
     //update Database
-    Users.findByIdAndUpdate({
+    Users.Users.findByIdAndUpdate({
         _id: recipient
     }, {
         $push: {
@@ -122,11 +123,11 @@ function addUser(recipient, senderId, name, email, status) {
 
 const key = new NodeRSA({b: 512});
 
-const encrypted = key.encrypt('5ced56cc5b93af1508f5bb79', 'base64');
-console.log('encrypted: ', encrypted);
-
-const decrypted = key.decrypt(encrypted, 'utf8');
-console.log('decrypted: ', decrypted);
+// const encrypted = key.encrypt('5ced56cc5b93af1508f5bb79', 'base64');
+// console.log('encrypted: ', encrypted);
+//
+// const decrypted = key.decrypt(encrypted, 'utf8');
+// console.log('decrypted: ', decrypted);
 
 
 function myDecrypted(dec) {
@@ -165,7 +166,7 @@ io.sockets.on('connection', function (socket) {
     });
 
     socket.on('list-users', function () {
-        Users.find({}, function (err, users) {
+        Users.Users.find({}, function (err, users) {
             let allUsers = [];
             for (let i = 0; i < users.length; i++)
                 allUsers[i] = {id: key.encrypt(users[i]._id, 'base64'), name: users[i].userName, email: users[i].email};
@@ -176,7 +177,7 @@ io.sockets.on('connection', function (socket) {
     });
 
     socket.on('invite-friend', function (target, sender) {
-        Users.find({_id: sender}, function (err, user) {
+        Users.Users.find({_id: sender}, function (err, user) {
             if (user) {
                 addUser(myDecrypted(target), sender, user[0].userName, user[0].email, false);
                 io.to(people[myDecrypted(target)]).emit("show-user-fiend-notification", user[0].userName + 'wat to be a friends', '/sounds/light.mp3');
@@ -193,12 +194,12 @@ io.sockets.on('connection', function (socket) {
             friends: {$elemMatch: {_id: sender}}
         }
 
-        Users.find(query, function (err, user) {
+        Users.Users.find(query, function (err, user) {
             if (err) console.log(err);
             for (let i = 0; i < user.length; i++) {
                 for (let y = 0; y < user[i].friends.length; y++) {
                     if (user[i].friends[y]._id === sender && user[i].friends[y].friend === false) {
-                        Users.findByIdAndUpdate(
+                        Users.Users.findByIdAndUpdate(
                             {
                                 _id: user[i]._id,
                                 friends: {$elemMatch: {_id: sender, friend: false}}
@@ -232,7 +233,7 @@ io.sockets.on('connection', function (socket) {
     });
 
     socket.on('notification', function (sender) {
-        Users.find({_id: socket.userId}, function (err, user) {
+        Users.Users.find({_id: socket.userId}, function (err, user) {
             let getUnFriends = [];
             for (let i = 0; i < user.length; i++) {
                 for (let y = 0; y < user[i].friends.length; y++) {
@@ -250,7 +251,7 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('getFriendList', function () {
         let listAllFriends = [];
-        Users.findOne({_id: socket.userId, friends: {$elemMatch: {friend: true}}}, function (err, user) {
+        Users.Users.findOne({_id: socket.userId, friends: {$elemMatch: {friend: true}}}, function (err, user) {
             if (!err)
                 if (typeof user !== 'undefined' && user !== null) {
                     for (let i = 0; i < user.friends.length; i++) {
@@ -264,8 +265,12 @@ io.sockets.on('connection', function (socket) {
     });
 
 
-    socket.on('start-private-chat-event', function (getUserId) {
-        io.to(people[myDecrypted(getUserId)]).emit('openChatWindow');
+    socket.on('start-private-chat-event', function (getUserId, senderId) {
+
+    });
+
+    socket.on('send-private-message', function (message) {
+
     });
 
 
